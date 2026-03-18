@@ -17,40 +17,54 @@ async function logEvent(data) {
 // --- [เพิ่มส่วนนี้: POST /api/auth/register] ---
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
-  const ip = req.headers['x-real-ip'] || req.ip;
-
-  console.log('--- [DEBUG REGISTER] ---');
-  console.log('Register attempt:', { username, email });
+  const ip = req.headers['x-forwarded-for'] || req.ip;
 
   try {
-    // 1. ตรวจสอบว่าอีเมลซ้ำไหม
-    const checkUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (checkUser.rows.length > 0) {
-      return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานไปแล้ว' });
+    // 1. ตรวจสอบค่าว่าง
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
     }
 
-    // 2. บันทึก User ใหม่ลงฐานข้อมูล (บันทึกรหัสผ่านตรงๆ เพื่อให้ Bypass ใน Login ได้)
+    // 2. ตรวจสอบว่า User/Email ซ้ำไหม
+    const checkUser = await pool.query(
+      'SELECT id FROM users WHERE email = $1 OR username = $2', 
+      [email.toLowerCase().trim(), username.trim()]
+    );
+    
+    if (checkUser.rows.length > 0) {
+      return res.status(400).json({ error: 'อีเมลหรือชื่อผู้ใช้งานนี้ถูกใช้ไปแล้ว' });
+    }
+
+    // 3. เข้ารหัสพาสเวิร์ด (ใช้ bcryptjs)
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 4. บันทึกลงฐานข้อมูล (ใช้ hashedPassword แทน password ตัวจริง)
     const result = await pool.query(
-      'INSERT INTO users (username, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
-      [username, email, password, 'user'] // กำหนดบทบาทเป็น user เริ่มต้น
+      `INSERT INTO users (username, email, password_hash, role) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING id, username, email, role`,
+      [username.trim(), email.toLowerCase().trim(), hashedPassword, 'member']
     );
 
     const newUser = result.rows[0];
-    console.log('✅ User Registered Successfully:', newUser.username);
 
-    // 3. บันทึก Log การสมัครสมาชิก
-    await logEvent({ 
-      level: 'INFO', 
-      event: 'REGISTER_SUCCESS', 
-      userId: newUser.id, 
-      message: `User ${newUser.username} registered via web`, 
-      ip_address: ip 
-    });
-
+    // 5. ส่ง Response กลับทันที
     res.status(201).json({ message: 'สมัครสมาชิกสำเร็จ!', user: newUser });
 
+    // 6. ส่ง Activity Log (Fire-and-forget)
+    logActivity({
+      userId: newUser.id,
+      username: newUser.username,
+      eventType: 'USER_REGISTERED',
+      entityType: 'user',
+      entityId: newUser.id,
+      summary: `${newUser.username} สมัครสมาชิกใหม่`
+    });
+
   } catch (err) {
-    console.error('REGISTER ERROR:', err);
+    // 📍 จุดสำคัญ: ให้แสดง Error ตัวจริงใน Console ของ Docker เพื่อการ Debug
+    console.error('❌ REGISTER ERROR DETAIL:', err); 
     res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
@@ -127,5 +141,6 @@ router.delete('/users/:id', async (req, res) => {
         res.status(500).json({ error: 'ไม่สามารถลบได้ เนื่องจากมีข้อมูลที่เกี่ยวข้องอยู่ในระบบ' });
     }
 });
+
 
 module.exports = router;

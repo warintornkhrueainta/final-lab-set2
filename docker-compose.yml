@@ -1,96 +1,103 @@
 services:
-  # 🗄️ Database
-  postgres:
+
+  # ── Databases ──────────────────────────────────────────────────────
+  auth-db:
     image: postgres:15-alpine
-    container_name: final-lab-set1-postgres-1
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: authdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret123
+    ports:
+      - "5433:5432"
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks: [taskboard-net]
+      - auth_data:/var/lib/postgresql/data
+      - ./auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U admin -d authdb"]
+      interval: 10s
       timeout: 5s
       retries: 5
 
-  # 🔑 Auth Service
+  task-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: taskdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret123
+    ports:
+      - "5434:5432"
+    volumes:
+      - task_data:/var/lib/postgresql/data
+      - ./task-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d taskdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  activity-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: activitydb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret123
+    ports:
+      - "5435:5432"
+    volumes:
+      - activity_data:/var/lib/postgresql/data
+      - ./activity-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d activitydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Services ───────────────────────────────────────────────────────
   auth-service:
     build: ./auth-service
-    container_name: final-lab-set1-auth-service-1
-    # เชื่อมไฟล์โค้ดในเครื่องเข้ากับ Container เพื่อให้ Hot Reload ได้
-    volumes:
-      - ./auth-service:/app
-      - /app/node_modules
     environment:
-      DB_HOST: postgres
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL:         postgres://admin:secret123@auth-db:5432/authdb
+      JWT_SECRET:           ${JWT_SECRET:-dev-shared-secret}
+      JWT_EXPIRES:          1h
+      PORT:                 3001
+      NODE_ENV:             development
+      ACTIVITY_SERVICE_URL: http://activity-service:3003
+    ports:
+      - "3001:3001"
     depends_on:
-      postgres: { condition: service_healthy }
-    networks: [taskboard-net]
+      auth-db:      { condition: service_healthy }
+      activity-service: { condition: service_started }
+    restart: unless-stopped
 
-  # 📋 Task Service
   task-service:
     build: ./task-service
-    container_name: final-lab-set1-task-service-1
-    volumes:
-      - ./task-service:/app
-      - /app/node_modules
     environment:
-      DB_HOST: postgres
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-    depends_on:
-      postgres: { condition: service_healthy }
-    networks: [taskboard-net]
-
-  # 📝 Log Service
-  log-service:
-    build: ./log-service
-    container_name: final-lab-set1-log-service-1
-    volumes:
-      - ./log-service:/app
-      - /app/node_modules
-    environment:
-      DB_HOST: postgres
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-    depends_on:
-      postgres: { condition: service_healthy }
-    networks: [taskboard-net]
-
-  # 🖥️ Frontend
-  frontend:
-    build: ./frontend
-    container_name: final-lab-set1-frontend-1
-    # สำคัญมาก: เชื่อมไฟล์ index.html ให้ Browser เห็นตัวล่าสุดตลอดเวลา
-    volumes:
-      - ./frontend:/usr/share/nginx/html
-    networks: [taskboard-net]
-
-  # 🛡️ Nginx (Gateway)
-  nginx:
-    build: ./nginx
-    container_name: final-lab-set1-nginx-1
+      DATABASE_URL:         postgres://admin:secret123@task-db:5432/taskdb
+      JWT_SECRET:           ${JWT_SECRET:-dev-shared-secret}
+      PORT:                 3002
+      NODE_ENV:             development
+      ACTIVITY_SERVICE_URL: http://activity-service:3003
     ports:
-      - "80:80"
-      - "443:443"
+      - "3002:3002"
     depends_on:
-      - auth-service
-      - task-service
-      - log-service
-      - frontend
-    networks: [taskboard-net]
+      task-db:          { condition: service_healthy }
+      activity-service: { condition: service_started }
+    restart: unless-stopped
 
-networks:
-  taskboard-net:
-    driver: bridge
+  activity-service:
+    build: ./activity-service
+    environment:
+      DATABASE_URL: postgres://admin:secret123@activity-db:5432/activitydb
+      JWT_SECRET:   ${JWT_SECRET:-dev-shared-secret}
+      PORT:         3003
+      NODE_ENV:     development
+    ports:
+      - "3003:3003"
+    depends_on:
+      activity-db: { condition: service_healthy }
+    restart: unless-stopped
+
+volumes:
+  auth_data:
+  task_data:
+  activity_data:
