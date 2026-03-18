@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📅 Activity Timeline — Final Lab Sec2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080e1a;
+      --surface:   #0f1c2e;
+      --surface2:  #162238;
+      --border:    #1e3355;
+      --border2:   #2a4570;
+      --text:      #e2eaf6;
+      --muted:     #6b84a8;
+      --dim:       #3d5478;
+
+      --blue:      #3b82f6;
+      --blue-dim:  rgba(59,130,246,.12);
+      --green:     #22d3a0;
+      --green-dim: rgba(34,211,160,.12);
+      --yellow:    #f59e0b;
+      --red:       #f43f5e;
+      --purple:    #818cf8;
+      --teal:      #14b8a6;
+      --teal-dim:  rgba(20,184,166,.12);
+
+      --radius: .6rem;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans Thai', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 70% 40% at 10% 10%, rgba(59,130,246,.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 90% 90%, rgba(20,184,166,.05) 0%, transparent 60%);
+    }
+
+    /* ─── Header ──────────────────────────────────── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: -.5px;
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #logged-as {
+      font-size: .8rem;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .back-link {
+      color: var(--blue);
+      font-size: .83rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .4rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: all .2s;
+    }
+    .back-link:hover { border-color: var(--blue); background: var(--blue-dim); }
+
+    /* ─── Container ───────────────────────────────── */
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ─── Stats ───────────────────────────────────── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: .75rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 700px) { .stats { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 480px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .85rem;
+      padding: 1rem 1.1rem;
+      text-align: center;
+      transition: border-color .2s;
+    }
+    .stat-card:hover { border-color: var(--border2); }
+    .stat-label {
+      color: var(--muted);
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 600;
+      margin-bottom: .3rem;
+    }
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ─── Tabs ────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: .4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .tab {
+      padding: .5rem 1.1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--muted);
+      transition: all .2s;
+    }
+    .tab:hover { border-color: var(--border2); color: var(--text); }
+    .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    /* ─── Filter Bar ──────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-bar select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .4rem .75rem;
+      border-radius: calc(var(--radius) - .15rem);
+      font-size: .83rem;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .filter-bar select:focus { border-color: var(--blue); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      padding: .45rem 1rem;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: .83rem;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all .2s;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-ghost { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+    /* ─── Timeline ────────────────────────────────── */
+    .timeline {
+      position: relative;
+      padding-left: 2.25rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: .7rem;
+      top: .5rem;
+      bottom: .5rem;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--border2), var(--border), transparent);
+      border-radius: 2px;
+    }
+
+    .activity-item {
+      position: relative;
+      margin-bottom: 1rem;
+      padding: 1rem 1.1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .85rem;
+      transition: border-color .2s, transform .15s;
+      animation: fadeIn .3s ease both;
+    }
+    .activity-item:hover { border-color: var(--border2); transform: translateX(2px); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Timeline dot */
+    .activity-item::before {
+      content: '';
+      position: absolute;
+      left: -1.75rem;
+      top: 1.15rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      background: var(--blue);
+      z-index: 1;
+    }
+    .activity-item.USER_REGISTERED::before    { background: var(--green); }
+    .activity-item.USER_LOGIN::before         { background: var(--blue); }
+    .activity-item.TASK_CREATED::before       { background: var(--teal); }
+    .activity-item.TASK_STATUS_CHANGED::before { background: var(--yellow); }
+    .activity-item.TASK_DELETED::before       { background: var(--red); }
+
+    .activity-header {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: .5rem;
+      flex-wrap: wrap;
+    }
+
+    .event-badge {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .15rem .55rem;
+      border-radius: .35rem;
+      white-space: nowrap;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: .02em;
+    }
+    .badge-REGISTERED { background: var(--green-dim);  color: var(--green); }
+    .badge-LOGIN      { background: var(--blue-dim);   color: var(--blue); }
+    .badge-CREATED    { background: var(--teal-dim);   color: var(--teal); }
+    .badge-STATUS     { background: rgba(245,158,11,.12); color: var(--yellow); }
+    .badge-DELETED    { background: rgba(244,63,94,.1);   color: var(--red); }
+
+    .activity-user {
+      font-size: .78rem;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .activity-summary {
+      font-size: .88rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .activity-time {
+      font-size: .75rem;
+      color: var(--dim);
+      font-family: 'IBM Plex Mono', monospace;
+      margin-top: .4rem;
+    }
+
+    .meta-tag {
+      display: inline-block;
+      font-size: .72rem;
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      padding: .15rem .5rem;
+      border-radius: .35rem;
+      margin-top: .4rem;
+      font-family: 'IBM Plex Mono', monospace;
+      word-break: break-all;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+
+    /* ─── Login Overlay ───────────────────────────── */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(59,130,246,.08) 0%, transparent 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 1rem;
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.2rem;
+      padding: 2.5rem;
+      width: 380px;
+      max-width: 100%;
+      box-shadow: 0 0 60px rgba(0,0,0,.5);
+    }
+    .login-box h2 {
+      font-size: 1.1rem;
+      margin-bottom: .25rem;
+    }
+    .login-box p {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: .4rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .form-group input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .65rem .85rem;
+      border-radius: var(--radius);
+      font-size: .9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+
+    /* ─── Refresh info ────────────────────────────── */
+    #last-refresh {
+      font-size: .75rem;
+      color: var(--dim);
+      text-align: right;
+      margin-top: .75rem;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ─── Spinner ─────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+<script src="config.js"></script>
+
+<!-- ══════════════════ LOGIN OVERLAY ══════════════════ -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2>📅 Activity Timeline</h2>
+    <p>กรุณา login เพื่อดู activities ของคุณ</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input id="l-email" type="email" placeholder="email@example.com">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%" id="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <p id="l-err" style="color:var(--red);font-size:.82rem;margin-top:.6rem;min-height:1.2em"></p>
+  </div>
+</div>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<header class="header">
+  <div class="header-logo">📅 Activity Timeline</div>
+  <div class="header-right">
+    <span id="logged-as"></span>
+    <a href="index.html" class="back-link">← Task Board</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">ทั้งหมด</div>
+      <div class="stat-value" id="stat-total" style="color:var(--text)">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" style="color:var(--green)">Registered</div>
+      <div class="stat-value" style="color:var(--green)" id="stat-reg">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" style="color:var(--blue)">Logins</div>
+      <div class="stat-value" style="color:var(--blue)" id="stat-login">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" style="color:var(--teal)">Tasks Created</div>
+      <div class="stat-value" style="color:var(--teal)" id="stat-tasks">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label" style="color:var(--yellow)">Status Changes</div>
+      <div class="stat-value" style="color:var(--yellow)" id="stat-status">—</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tab-mine" onclick="switchTab('mine')">🙋 กิจกรรมของฉัน</button>
+    <button class="tab" id="tab-all" onclick="switchTab('all')" style="display:none">👑 ทั้งระบบ (admin)</button>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <select id="f-event" onchange="loadActivities()">
+      <option value="">Event: ทั้งหมด</option>
+      <option value="USER_REGISTERED">USER_REGISTERED</option>
+      <option value="USER_LOGIN">USER_LOGIN</option>
+      <option value="TASK_CREATED">TASK_CREATED</option>
+      <option value="TASK_STATUS_CHANGED">TASK_STATUS_CHANGED</option>
+      <option value="TASK_DELETED">TASK_DELETED</option>
+    </select>
+    <button class="btn btn-primary" onclick="loadActivities()">🔄 โหลดใหม่</button>
+    <button class="btn btn-ghost" onclick="clearFilter()">✕ ล้าง</button>
+    <span style="margin-left:auto;font-size:.78rem;color:var(--muted)" id="result-count"></span>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline" id="timeline">
+    <div class="empty"><span class="spinner"></span></div>
+  </div>
+  <p id="last-refresh"></p>
+
+</div>
+
+<script>
+const AUTH     = window.APP_CONFIG.AUTH_URL;
+const ACTIVITY = window.APP_CONFIG.ACTIVITY_URL;
+
+let token    = localStorage.getItem('jwt_token');
+let currUser = null;
+let currTab  = 'mine';
+
+const BADGE = {
+  USER_REGISTERED:     'REGISTERED',
+  USER_LOGIN:          'LOGIN',
+  TASK_CREATED:        'CREATED',
+  TASK_STATUS_CHANGED: 'STATUS',
+  TASK_DELETED:        'DELETED'
+};
+const ICON = {
+  USER_REGISTERED:     '🎉',
+  USER_LOGIN:          '🔑',
+  TASK_CREATED:        '✅',
+  TASK_STATUS_CHANGED: '🔄',
+  TASK_DELETED:        '🗑️'
+};
+
+function authHeaders() {
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ══════════════════════════════════════════════════
+//  Login
+// ══════════════════════════════════════════════════
+async function doLogin() {
+  const email    = document.getElementById('l-email').value.trim();
+  const password = document.getElementById('l-pass').value;
+  document.getElementById('l-err').textContent = '';
+
+  document.getElementById('btn-login').disabled  = true;
+  document.getElementById('btn-login').innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const res  = await fetch(`${AUTH}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      token = data.token;
+      localStorage.setItem('jwt_token', token);
+      currUser = data.user;
+      initPage();
+    } else {
+      document.getElementById('l-err').textContent = data.error || 'Login ล้มเหลว';
+    }
+  } catch {
+    document.getElementById('l-err').textContent = 'ไม่สามารถเชื่อมต่อ Auth Service ได้';
+  } finally {
+    document.getElementById('btn-login').disabled  = false;
+    document.getElementById('btn-login').textContent = 'เข้าสู่ระบบ';
+  }
+}
+
+function initPage() {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('logged-as').textContent = `👤 ${currUser.username} · ${currUser.role}`;
+  if (currUser.role === 'admin') {
+    document.getElementById('tab-all').style.display = 'inline-flex';
+  }
+  loadActivities();
+}
+
+function switchTab(tab) {
+  currTab = tab;
+  document.getElementById('tab-mine').classList.toggle('active', tab === 'mine');
+  document.getElementById('tab-all').classList.toggle('active',  tab === 'all');
+  loadActivities();
+}
+
+// ══════════════════════════════════════════════════
+//  Load Activities
+// ══════════════════════════════════════════════════
+async function loadActivities() {
+  const event_type = document.getElementById('f-event').value;
+  const params     = new URLSearchParams({ limit: 100 });
+  if (event_type) params.set('event_type', event_type);
+
+  const endpoint = currTab === 'all'
+    ? `${ACTIVITY}/api/activity/all?${params}`
+    : `${ACTIVITY}/api/activity/me?${params}`;
+
+  document.getElementById('timeline').innerHTML =
+    '<div class="empty"><span class="spinner"></span></div>';
+
+  try {
+    const res = await fetch(endpoint, { headers: authHeaders() });
+
+    if (res.status === 401) {
+      document.getElementById('login-overlay').style.display = 'flex';
+      return;
+    }
+    if (res.status === 403) {
+      document.getElementById('timeline').innerHTML =
+        '<div class="empty"><div class="empty-icon">⛔</div><p style="color:var(--red)">เฉพาะ admin เท่านั้น</p></div>';
+      return;
+    }
+    if (!res.ok) {
+      document.getElementById('timeline').innerHTML =
+        '<div class="empty"><div class="empty-icon">⚠️</div><p>เกิดข้อผิดพลาด</p></div>';
+      return;
+    }
+
+    const data = await res.json();
+    const acts = data.activities || [];
+
+    updateStats(acts);
+    renderTimeline(acts);
+
+    document.getElementById('result-count').textContent = `${acts.length}/${data.total} รายการ`;
+    document.getElementById('last-refresh').textContent =
+      `อัปเดตล่าสุด: ${new Date().toLocaleTimeString('th-TH')}`;
+
+  } catch {
+    document.getElementById('timeline').innerHTML =
+      '<div class="empty"><div class="empty-icon">🔌</div><p>ไม่สามารถเชื่อมต่อ Activity Service ได้</p></div>';
+  }
+}
+
+function updateStats(acts) {
+  document.getElementById('stat-total').textContent  = acts.length;
+  document.getElementById('stat-reg').textContent    = acts.filter(a => a.event_type === 'USER_REGISTERED').length;
+  document.getElementById('stat-login').textContent  = acts.filter(a => a.event_type === 'USER_LOGIN').length;
+  document.getElementById('stat-tasks').textContent  = acts.filter(a => a.event_type === 'TASK_CREATED').length;
+  document.getElementById('stat-status').textContent = acts.filter(a => a.event_type === 'TASK_STATUS_CHANGED').length;
+}
+
+function renderTimeline(acts) {
+  const container = document.getElementById('timeline');
+  if (!acts.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>ยังไม่มี activity</p></div>';
+    return;
+  }
+
+  container.innerHTML = acts.map((a, i) => {
+    const badge   = BADGE[a.event_type] || 'LOGIN';
+    const icon    = ICON[a.event_type]  || '•';
+    const time    = new Date(a.created_at).toLocaleString('th-TH', {
+      dateStyle: 'short', timeStyle: 'medium'
+    });
+    const metaStr = a.meta ? JSON.stringify(a.meta, null, 0) : '';
+
+    return `
+      <div class="activity-item ${escHtml(a.event_type)}" style="animation-delay:${i * 30}ms">
+        <div class="activity-header">
+          <span class="event-badge badge-${badge}">${icon} ${escHtml(a.event_type)}</span>
+          ${a.username ? `<span class="activity-user">@${escHtml(a.username)}</span>` : ''}
+        </div>
+        <div class="activity-summary">${escHtml(a.summary || '—')}</div>
+        <div class="activity-time">🕐 ${escHtml(time)}</div>
+        ${metaStr ? `<div class="meta-tag">${escHtml(metaStr)}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function clearFilter() {
+  document.getElementById('f-event').value = '';
+  loadActivities();
+}
+
+// ══════════════════════════════════════════════════
+//  Auto-login ถ้ามี token
+// ══════════════════════════════════════════════════
+if (token) {
+  (async () => {
+    try {
+      const res  = await fetch(`${AUTH}/api/auth/verify`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.valid) { currUser = data.user; initPage(); }
+      else { localStorage.removeItem('jwt_token'); token = null; }
+    } catch { /* stay on login */ }
+  })();
+}
+</script>
+</body>
+</html>

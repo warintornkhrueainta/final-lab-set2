@@ -1,324 +1,1045 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Board | Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-sub: #64748b;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --border: #e2e8f0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📋 Task Board — Final Lab Sec2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        * { box-sizing: border-box; transition: all 0.2s ease; }
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+    :root {
+      --bg:        #080e1a;
+      --surface:   #0f1c2e;
+      --surface2:  #162238;
+      --border:    #1e3355;
+      --border2:   #2a4570;
+      --text:      #e2eaf6;
+      --muted:     #6b84a8;
+      --dim:       #3d5478;
 
-        .container { 
-            width: 100%;
-            max-width: 900px; 
-            background: var(--card-bg); 
-            padding: 40px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); 
-        }
+      --blue:      #3b82f6;
+      --blue-dim:  rgba(59,130,246,.12);
+      --green:     #22d3a0;
+      --green-dim: rgba(34,211,160,.12);
+      --yellow:    #f59e0b;
+      --red:       #f43f5e;
+      --red-dim:   rgba(244,63,94,.1);
+      --purple:    #818cf8;
+      --teal:      #14b8a6;
 
-        h2, h3 { margin-top: 0; color: var(--text-main); font-weight: 600; }
-        
-        /* Auth Box Style */
-        .auth-box { 
-            max-width: 400px; 
-            margin: auto; 
-            text-align: center;
-        }
+      --sidebar-w: 240px;
+      --radius:    .6rem;
+    }
 
-        input { 
-            width: 100%;
-            padding: 12px 16px; 
-            margin: 10px 0; 
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-        }
+    body {
+      font-family: 'IBM Plex Sans Thai', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+    /* ─── Grid Layout ─────────────────────────────────── */
+    #app-page { display: flex; height: 100vh; overflow: hidden; }
 
-        button { 
-            width: 100%;
-            padding: 12px; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+    /* ─── Auth Page ───────────────────────────────────── */
+    #auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(59,130,246,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(20,184,166,.06) 0%, transparent 60%);
+      padding: 1rem;
+    }
 
-        button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.2rem;
+      padding: 2.5rem;
+      width: 420px;
+      max-width: 100%;
+      box-shadow: 0 0 60px rgba(0,0,0,.5), 0 0 0 1px rgba(59,130,246,.08);
+    }
 
-        /* Task Items */
-        .task-item { 
-            background: #fff;
-            border: 1px solid var(--border);
-            padding: 15px; 
-            border-radius: 12px;
-            margin-bottom: 12px;
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
+    .auth-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--blue);
+      margin-bottom: .25rem;
+      letter-spacing: -.5px;
+    }
+    .auth-tagline { font-size: .8rem; color: var(--muted); margin-bottom: 1.75rem; }
 
-        .task-info { display: flex; flex-direction: column; }
-        .task-title { font-weight: 600; font-size: 16px; }
-        .task-status { font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* Auth Tabs */
+    .auth-tabs {
+      display: flex;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: .25rem;
+      gap: .25rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+    }
+    .auth-tab {
+      flex: 1;
+      padding: .55rem;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: calc(var(--radius) - .15rem);
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all .2s;
+    }
+    .auth-tab.active {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
 
-        /* Admin Table */
-        .admin-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid var(--border);
-        }
+    /* Form */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: .4rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .form-group input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .65rem .85rem;
+      border-radius: var(--radius);
+      font-size: .9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .form-group input::placeholder { color: var(--dim); }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-        th { text-align: left; padding: 12px; background: #f1f5f9; color: var(--text-sub); }
-        td { padding: 12px; border-bottom: 1px solid var(--border); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      padding: .65rem 1.25rem;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: .88rem;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all .2s;
+      text-decoration: none;
+    }
+    .btn-primary  { background: var(--blue); color: #fff; }
+    .btn-primary:hover  { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(59,130,246,.3); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+    .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(244,63,94,.2); }
+    .btn-danger:hover { background: rgba(244,63,94,.2); }
+    .btn-full  { width: 100%; }
+    .btn-sm { padding: .35rem .75rem; font-size: .8rem; }
 
-        .badge-admin { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-sub); width: auto; padding: 6px 12px; }
-        .btn-outline:hover { background: #f1f5f9; color: var(--text-main); }
-        
-        .delete-btn { background: var(--danger); width: auto; font-size: 12px; padding: 6px 12px; }
-        .approve-btn { background: var(--success); width: auto; font-size: 12px; padding: 6px 12px; margin-right: 5px; }
+    .error-msg { color: var(--red); font-size: .82rem; margin-top: .6rem; min-height: 1.2em; }
+    .success-msg { color: var(--green); font-size: .82rem; margin-top: .6rem; }
 
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-    </style>
+    .hidden { display: none !important; }
+
+    /* ─── Sidebar ─────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 0;
+      overflow: hidden;
+    }
+
+    .sidebar-logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--blue);
+      padding: 0 1.25rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: .75rem;
+      letter-spacing: -.5px;
+    }
+
+    .sidebar-nav { flex: 1; padding: 0 .75rem; display: flex; flex-direction: column; gap: .25rem; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      padding: .65rem .85rem;
+      border-radius: var(--radius);
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .875rem;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all .18s;
+      text-align: left;
+      width: 100%;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,.2); }
+    .nav-icon { font-size: 1rem; flex-shrink: 0; }
+
+    .badge-count {
+      margin-left: auto;
+      background: var(--blue);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .1rem .45rem;
+      border-radius: 99px;
+      min-width: 1.4rem;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .sidebar-footer {
+      padding: .75rem;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      padding: .65rem .75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .85rem;
+      flex-shrink: 0;
+    }
+    #sidebar-name { font-size: .82rem; font-weight: 600; line-height: 1.2; }
+
+    .role-badge {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: .1rem .4rem;
+      border-radius: .3rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .role-admin  { background: rgba(245,158,11,.15); color: var(--yellow); }
+    .role-member { background: var(--blue-dim); color: var(--blue); }
+
+    .logout-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .9rem;
+      padding: .2rem;
+      border-radius: .3rem;
+      line-height: 1;
+      transition: color .2s;
+      flex-shrink: 0;
+    }
+    .logout-btn:hover { color: var(--red); }
+
+    /* ─── Main Content ────────────────────────────────── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .page-title { font-size: 1.3rem; font-weight: 700; }
+    .page-subtitle { font-size: .82rem; color: var(--muted); margin-top: .15rem; }
+
+    /* ─── Filter Bar ──────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      flex-wrap: wrap;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+    }
+
+    .filter-bar select, .filter-bar input[type="text"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .4rem .75rem;
+      border-radius: calc(var(--radius) - .15rem);
+      font-size: .83rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .filter-bar select:focus, .filter-bar input[type="text"]:focus { border-color: var(--blue); }
+    .filter-bar label { font-size: .8rem; color: var(--muted); font-weight: 500; }
+
+    /* ─── Task Grid ───────────────────────────────────── */
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: .85rem;
+    }
+
+    .task-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .85rem;
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      transition: border-color .2s, transform .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .task-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 3px 0 0 3px;
+    }
+    .task-card.priority-high::before   { background: var(--red); }
+    .task-card.priority-medium::before { background: var(--yellow); }
+    .task-card.priority-low::before    { background: var(--green); }
+    .task-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+
+    .task-header { display: flex; align-items: flex-start; gap: .6rem; }
+    .task-title { font-size: .92rem; font-weight: 600; flex: 1; line-height: 1.4; }
+
+    .chip {
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .2rem .5rem;
+      border-radius: .35rem;
+      white-space: nowrap;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .chip-TODO         { background: rgba(107,132,168,.15); color: var(--muted); }
+    .chip-IN_PROGRESS  { background: rgba(245,158,11,.12);  color: var(--yellow); }
+    .chip-DONE         { background: var(--green-dim);      color: var(--green); }
+    .chip-high         { background: var(--red-dim);        color: var(--red); }
+    .chip-medium       { background: rgba(245,158,11,.1);   color: var(--yellow); }
+    .chip-low          { background: var(--green-dim);      color: var(--green); }
+    .chip-owner        { background: var(--blue-dim);       color: var(--blue); }
+
+    .task-desc { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      flex-wrap: wrap;
+      margin-top: .2rem;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: .4rem;
+      margin-top: .4rem;
+      padding-top: .75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .task-actions select {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .35rem .6rem;
+      border-radius: calc(var(--radius) - .15rem);
+      font-size: .78rem;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .empty-state p { font-size: .9rem; }
+
+    /* ─── Modal ───────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.1rem;
+      padding: 2rem;
+      width: 460px;
+      max-width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,.6);
+    }
+
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .modal-actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+    /* ─── Scrollbar ───────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* ─── Loading ─────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Toast ───────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: .75rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: .85rem;
+      z-index: 999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all .3s;
+      max-width: 300px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.toast-ok  { border-color: rgba(34,211,160,.3); color: var(--green); }
+    #toast.toast-err { border-color: rgba(244,63,94,.3);  color: var(--red); }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div id="auth-section" class="auth-box">
-            <div id="login-form">
-                <h2>👋 Welcome Back</h2>
-                <p style="color: var(--text-sub);">Please enter your details</p>
-                <input type="email" id="email" placeholder="Email address">
-                <input type="password" id="password" placeholder="Password">
-                <button onclick="login()">Sign In</button>
-                <p style="font-size: 14px; color: var(--text-sub); margin-top: 20px;">
-                    Don't have an account? <a href="#" onclick="toggleAuth(true)" style="color: var(--primary); text-decoration: none;">Create one</a>
-                </p>
-            </div>
+<script src="config.js"></script>
 
-            <div id="register-form" style="display:none;">
-                <h2>✨ Create Account</h2>
-                <input type="text" id="regUsername" placeholder="Username">
-                <input type="email" id="regEmail" placeholder="Email address">
-                <input type="password" id="regPassword" placeholder="Password">
-                <button onclick="register()">Register</button>
-                <p style="font-size: 14px; color: var(--text-sub); margin-top: 20px;">
-                    Already have an account? <a href="#" onclick="toggleAuth(false)" style="color: var(--primary); text-decoration: none;">Log in</a>
-                </p>
-            </div>
-        </div>
+<!-- ══════════════════ AUTH PAGE ══════════════════ -->
+<div id="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">📋 Task Board</div>
+    <div class="auth-tagline">Final Lab — Sec2 Set 2 · Microservices</div>
 
-        <div id="task-section" style="display:none;">
-            <div class="header-flex">
-                <div>
-                    <h2 style="margin-bottom: 5px;">🚀 Project Board</h2>
-                    <span style="color: var(--text-sub);">User: <b id="user-display" style="color: var(--primary);"></b></span>
-                </div>
-                <button onclick="logout()" class="btn-outline">Sign Out</button>
-            </div>
-
-            <div style="display: flex; gap: 10px; margin-bottom: 30px; background: #f1f5f9; padding: 15px; border-radius: 12px;">
-                <input type="text" id="taskTitle" placeholder="What needs to be done?" style="margin:0; flex-grow: 1;">
-                <button onclick="addTask()" style="width: 120px; margin:0;">+ Add Task</button>
-            </div>
-            
-            <div id="taskList"></div>
-            
-            <div id="admin-section" class="admin-section" style="display:none;">
-                <h3 style="display: flex; align-items: center; gap: 10px;">
-                    🛡️ Admin Control Panel
-                </h3>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userList"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">เข้าสู่ระบบ</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">สมัครสมาชิก</button>
     </div>
 
+    <!-- Login Form -->
+    <div id="form-login">
+      <div class="form-group">
+        <label>Email</label>
+        <input id="l-email" type="email" placeholder="email@example.com" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-primary btn-full" id="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
+      <div class="error-msg" id="l-err"></div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="form-register" class="hidden">
+      <div class="form-group">
+        <label>Username</label>
+        <input id="r-username" type="text" placeholder="your_username">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input id="r-email" type="email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password (อย่างน้อย 6 ตัว)</label>
+        <input id="r-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <button class="btn btn-primary btn-full" id="btn-register" onclick="doRegister()">สมัครสมาชิก</button>
+      <div class="error-msg" id="r-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ APP PAGE ══════════════════ -->
+<div id="app-page" class="hidden">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">📋 Task Board</div>
+    <div class="sidebar-nav">
+
+      <button class="nav-item active" data-page="tasks" onclick="showPage('tasks')">
+        <span class="nav-icon">✅</span> Tasks
+        <span class="badge-count" id="task-count">0</span>
+      </button>
+
+      <a href="activity.html" target="_blank" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">📅</span> Activity Timeline
+        <span style="margin-left:auto;font-size:.7rem;color:var(--muted)">↗</span>
+      </a>
+
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebar-avatar">?</div>
+        <div style="flex:1;min-width:0">
+          <div id="sidebar-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+          <span class="role-badge" id="sidebar-role-badge">—</span>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="ออกจากระบบ">✕</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+    <div id="page-tasks">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">Tasks ของฉัน</div>
+          <div class="page-subtitle" id="task-subtitle">กำลังโหลด...</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateModal()">＋ สร้าง Task</button>
+      </div>
+
+      <!-- Filter -->
+      <div class="filter-bar">
+        <label>สถานะ</label>
+        <select id="f-status" onchange="renderFilteredTasks()">
+          <option value="">ทั้งหมด</option>
+          <option value="TODO">TODO</option>
+          <option value="IN_PROGRESS">IN_PROGRESS</option>
+          <option value="DONE">DONE</option>
+        </select>
+        <label>Priority</label>
+        <select id="f-priority" onchange="renderFilteredTasks()">
+          <option value="">ทั้งหมด</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <input type="text" id="f-search" placeholder="🔍 ค้นหา..." oninput="renderFilteredTasks()" style="flex:1;min-width:120px">
+        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">ล้าง</button>
+      </div>
+
+      <!-- Tasks Grid -->
+      <div class="tasks-grid" id="tasks-grid">
+        <div class="empty-state">
+          <div class="empty-icon">⏳</div>
+          <p>กำลังโหลด tasks...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════ MODAL: Create / Edit Task ══════════════════ -->
+<div class="modal-overlay hidden" id="task-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">＋ สร้าง Task ใหม่</div>
+
+    <div class="form-group">
+      <label>ชื่อ Task *</label>
+      <input id="m-title" type="text" placeholder="เช่น Deploy to Railway" maxlength="200">
+    </div>
+    <div class="form-group">
+      <label>รายละเอียด</label>
+      <input id="m-desc" type="text" placeholder="(ไม่บังคับ)">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="m-priority" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .75rem;border-radius:var(--radius);font-family:inherit;outline:none">
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="form-group" id="status-group" class="hidden">
+        <label>สถานะ</label>
+        <select id="m-status" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .75rem;border-radius:var(--radius);font-family:inherit;outline:none">
+          <option value="TODO">TODO</option>
+          <option value="IN_PROGRESS">IN_PROGRESS</option>
+          <option value="DONE">DONE</option>
+        </select>
+      </div>
+    </div>
+    <div class="error-msg" id="m-err"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary" id="modal-submit-btn" onclick="submitTask()">สร้าง Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ MODAL: Confirm Delete ══════════════════ -->
+<div class="modal-overlay hidden" id="delete-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">🗑️ ยืนยันการลบ</div>
+    <p style="color:var(--muted);font-size:.88rem">คุณแน่ใจหรือไม่? การลบ task นี้ไม่สามารถย้อนกลับได้</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('delete-modal').classList.add('hidden')">ยกเลิก</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">ลบ Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
 <script>
-    // --- Logic เหมือนเดิมที่คุณเขียนไว้ (Script เดิมใช้งานได้ปกติ) ---
-    const API_AUTH = '/api/auth';
-    const API_TASKS = '/api/tasks';
+// ══════════════════════════════════════════════════
+//  Config
+// ══════════════════════════════════════════════════
+const AUTH = window.APP_CONFIG.AUTH_URL;
+const TASK = window.APP_CONFIG.TASK_URL;
 
-    function toggleAuth(isRegister) {
-        document.getElementById('login-form').style.display = isRegister ? 'none' : 'block';
-        document.getElementById('register-form').style.display = isRegister ? 'block' : 'none';
+let token       = localStorage.getItem('jwt_token');
+let currentUser = null;
+let allTasks    = [];
+let editingId   = null;
+let deleteTargetId = null;
+
+// ══════════════════════════════════════════════════
+//  Helpers
+// ══════════════════════════════════════════════════
+function authHeaders() {
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show toast-${type}`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = '', 3000);
+}
+
+function setBtn(id, loading, text) {
+  const b = document.getElementById(id);
+  b.disabled = loading;
+  b.innerHTML = loading ? '<span class="spinner"></span>' : text;
+}
+
+// ══════════════════════════════════════════════════
+//  Auth Tab Switch
+// ══════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('l-err').textContent = '';
+  document.getElementById('r-err').textContent = '';
+}
+
+// ══════════════════════════════════════════════════
+//  Login
+// ══════════════════════════════════════════════════
+async function doLogin() {
+  const email    = document.getElementById('l-email').value.trim();
+  const password = document.getElementById('l-pass').value;
+  document.getElementById('l-err').textContent = '';
+
+  if (!email || !password) {
+    document.getElementById('l-err').textContent = 'กรุณากรอก email และ password';
+    return;
+  }
+
+  setBtn('btn-login', true, '');
+  try {
+    const res  = await fetch(`${AUTH}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      token = data.token;
+      localStorage.setItem('jwt_token', token);
+      currentUser = data.user;
+      initApp(currentUser);
+    } else {
+      document.getElementById('l-err').textContent = data.error || 'Login ล้มเหลว';
     }
+  } catch {
+    document.getElementById('l-err').textContent = 'ไม่สามารถเชื่อมต่อ Auth Service ได้';
+  } finally {
+    setBtn('btn-login', false, 'เข้าสู่ระบบ');
+  }
+}
 
-    async function register() {
-        const username = document.getElementById('regUsername').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
-        if(!username || !email || !password) return alert('กรุณากรอกข้อมูลให้ครบ');
+// ══════════════════════════════════════════════════
+//  Register
+// ══════════════════════════════════════════════════
+async function doRegister() {
+  const username = document.getElementById('r-username').value.trim();
+  const email    = document.getElementById('r-email').value.trim();
+  const password = document.getElementById('r-pass').value;
+  document.getElementById('r-err').textContent = '';
 
-        try {
-            const res = await fetch(`${API_AUTH}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
-            });
+  if (!username || !email || !password) {
+    document.getElementById('r-err').textContent = 'กรุณากรอกข้อมูลให้ครบ';
+    return;
+  }
+  if (password.length < 6) {
+    document.getElementById('r-err').textContent = 'Password ต้องมีอย่างน้อย 6 ตัวอักษร';
+    return;
+  }
 
-            if (res.ok) {
-                alert('สมัครสมาชิกสำเร็จ!');
-                toggleAuth(false);
-            } else {
-                const data = await res.json();
-                alert('Error: ' + data.error);
-            }
-        } catch (err) { alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'); }
+  setBtn('btn-register', true, '');
+  try {
+    const res  = await fetch(`${AUTH}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      // Auto-login หลัง register
+      const loginRes  = await fetch(`${AUTH}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const loginData = await loginRes.json();
+      if (loginRes.ok) {
+        token = loginData.token;
+        localStorage.setItem('jwt_token', token);
+        currentUser = loginData.user;
+        initApp(currentUser);
+        showToast('🎉 สมัครสมาชิกสำเร็จ!');
+      }
+    } else {
+      document.getElementById('r-err').textContent = data.error || 'สมัครสมาชิกไม่สำเร็จ';
     }
+  } catch {
+    document.getElementById('r-err').textContent = 'ไม่สามารถเชื่อมต่อ Auth Service ได้';
+  } finally {
+    setBtn('btn-register', false, 'สมัครสมาชิก');
+  }
+}
 
-    async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+// ══════════════════════════════════════════════════
+//  Init App
+// ══════════════════════════════════════════════════
+function initApp(user) {
+  currentUser = user;
+  document.getElementById('auth-page').classList.add('hidden');
+  document.getElementById('app-page').classList.remove('hidden');
 
-        try {
-            const res = await fetch(`${API_AUTH}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+  const initials = (user.username || user.email || '?').charAt(0).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('sidebar-name').textContent   = user.username || user.email;
+  const rb = document.getElementById('sidebar-role-badge');
+  rb.textContent = user.role;
+  rb.className   = `role-badge role-${user.role}`;
 
-            if (res.ok) {
-                const data = await res.json();
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('role', data.user.role); 
-                
-                document.getElementById('user-display').innerText = data.user.username;
-                document.getElementById('auth-section').style.display = 'none';
-                document.getElementById('task-section').style.display = 'block';
+  showPage('tasks');
+}
 
-                if (data.user.role === 'admin') {
-                    document.getElementById('admin-section').style.display = 'block';
-                    loadUsers();
-                }
-                loadTasks();
-            } else {
-                alert('Login Failed: ตรวจสอบ Email/Password');
-            }
-        } catch (err) { alert('Login Error: ' + err); }
+function showPage(page) {
+  ['tasks'].forEach(p => {
+    document.getElementById(`page-${p}`).classList.toggle('hidden', p !== page);
+    const btn = document.querySelector(`[data-page="${p}"]`);
+    if (btn) btn.classList.toggle('active', p === page);
+  });
+  if (page === 'tasks') loadTasks();
+}
+
+function doLogout() {
+  localStorage.removeItem('jwt_token');
+  token = null;
+  currentUser = null;
+  allTasks = [];
+  document.getElementById('app-page').classList.add('hidden');
+  document.getElementById('auth-page').classList.remove('hidden');
+  document.getElementById('l-email').value = '';
+  document.getElementById('l-pass').value  = '';
+}
+
+// ══════════════════════════════════════════════════
+//  Tasks
+// ══════════════════════════════════════════════════
+async function loadTasks() {
+  document.getElementById('tasks-grid').innerHTML =
+    '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
+
+  try {
+    const res  = await fetch(`${TASK}/api/tasks`, { headers: authHeaders() });
+    if (res.status === 401) { doLogout(); return; }
+    const data = await res.json();
+    allTasks   = Array.isArray(data) ? data : (data.tasks || []);
+    updateTaskCount();
+    renderFilteredTasks();
+  } catch {
+    document.getElementById('tasks-grid').innerHTML =
+      '<div class="empty-state"><div class="empty-icon">⚠️</div><p>ไม่สามารถเชื่อมต่อ Task Service ได้</p></div>';
+  }
+}
+
+function updateTaskCount() {
+  document.getElementById('task-count').textContent = allTasks.length;
+  document.getElementById('task-subtitle').textContent =
+    `${allTasks.length} task${allTasks.length !== 1 ? 's' : ''} · ${allTasks.filter(t=>t.status==='DONE').length} เสร็จแล้ว`;
+}
+
+function renderFilteredTasks() {
+  const status   = document.getElementById('f-status').value;
+  const priority = document.getElementById('f-priority').value;
+  const search   = document.getElementById('f-search').value.toLowerCase();
+
+  const filtered = allTasks.filter(t => {
+    if (status   && t.status   !== status)   return false;
+    if (priority && t.priority !== priority) return false;
+    if (search   && !t.title.toLowerCase().includes(search) &&
+        !(t.description||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  const grid = document.getElementById('tasks-grid');
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>ไม่พบ task ที่ตรงกัน</p></div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(t => `
+    <div class="task-card priority-${escHtml(t.priority)}">
+      <div class="task-header">
+        <div class="task-title">${escHtml(t.title)}</div>
+        <span class="chip chip-${escHtml(t.status)}">${escHtml(t.status)}</span>
+      </div>
+      ${t.description ? `<div class="task-desc">${escHtml(t.description)}</div>` : ''}
+      <div class="task-meta">
+        <span class="chip chip-${escHtml(t.priority)}">${escHtml(t.priority)}</span>
+        <span class="chip chip-owner">👤 ${escHtml(t.username || String(t.user_id) || '?')}</span>
+        <span style="margin-left:auto;font-size:.72rem;color:var(--muted);font-family:'IBM Plex Mono',monospace">
+          #${t.id}
+        </span>
+      </div>
+      <div class="task-actions">
+        <select onchange="quickUpdateStatus(${t.id}, this.value)" title="เปลี่ยนสถานะ">
+          <option value="TODO"        ${t.status==='TODO'?'selected':''}>TODO</option>
+          <option value="IN_PROGRESS" ${t.status==='IN_PROGRESS'?'selected':''}>IN_PROGRESS</option>
+          <option value="DONE"        ${t.status==='DONE'?'selected':''}>DONE</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="openEditModal(${t.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${t.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function clearFilters() {
+  document.getElementById('f-status').value   = '';
+  document.getElementById('f-priority').value = '';
+  document.getElementById('f-search').value   = '';
+  renderFilteredTasks();
+}
+
+async function quickUpdateStatus(id, status) {
+  try {
+    const res = await fetch(`${TASK}/api/tasks/${id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ status })
+    });
+    if (res.ok) {
+      const t = allTasks.find(t => t.id === id);
+      if (t) t.status = status;
+      updateTaskCount();
+      renderFilteredTasks();
+      showToast(`✅ อัปเดตสถานะเป็น ${status}`);
     }
+  } catch { showToast('อัปเดตไม่สำเร็จ', 'err'); }
+}
 
-    async function loadTasks() {
-        try {
-            const res = await fetch(API_TASKS);
-            const tasks = await res.json();
-            const list = document.getElementById('taskList');
-            const currentRole = localStorage.getItem('role');
+// ══════════════════════════════════════════════════
+//  Modal
+// ══════════════════════════════════════════════════
+function openCreateModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = '＋ สร้าง Task ใหม่';
+  document.getElementById('modal-submit-btn').textContent = 'สร้าง Task';
+  document.getElementById('m-title').value    = '';
+  document.getElementById('m-desc').value     = '';
+  document.getElementById('m-priority').value = 'medium';
+  document.getElementById('m-status').value   = 'TODO';
+  document.getElementById('status-group').style.display = 'none';
+  document.getElementById('m-err').textContent = '';
+  document.getElementById('task-modal').classList.remove('hidden');
+  document.getElementById('m-title').focus();
+}
 
-            list.innerHTML = tasks.map(t => `
-                <div class="task-item">
-                    <div class="task-info">
-                        <span class="task-title">${t.title}</span>
-                        <span class="task-status" style="color: ${t.status === 'Approved' ? 'var(--success)' : 'var(--warning)'}">
-                            ● ${t.status}
-                        </span>
-                    </div>
-                    <div>
-                        ${currentRole === 'admin' && t.status !== 'Approved' ? 
-                            `<button class="approve-btn" onclick="approveTask(${t.id})">Approve</button>` : ''}
-                        ${currentRole === 'admin' ? 
-                            `<button class="delete-btn" onclick="deleteTask(${t.id})">Delete</button>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        } catch (e) {}
+function openEditModal(id) {
+  const t = allTasks.find(t => t.id === id);
+  if (!t) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = `✏️ แก้ไข Task #${id}`;
+  document.getElementById('modal-submit-btn').textContent = 'บันทึก';
+  document.getElementById('m-title').value    = t.title;
+  document.getElementById('m-desc').value     = t.description || '';
+  document.getElementById('m-priority').value = t.priority;
+  document.getElementById('m-status').value   = t.status;
+  document.getElementById('status-group').style.display = 'block';
+  document.getElementById('m-err').textContent = '';
+  document.getElementById('task-modal').classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('task-modal').classList.add('hidden'); }
+
+async function submitTask() {
+  const title    = document.getElementById('m-title').value.trim();
+  const description = document.getElementById('m-desc').value.trim();
+  const priority = document.getElementById('m-priority').value;
+  const status   = document.getElementById('m-status').value;
+  document.getElementById('m-err').textContent = '';
+
+  if (!title) { document.getElementById('m-err').textContent = 'กรุณาใส่ชื่อ Task'; return; }
+
+  const isEdit = editingId !== null;
+  const url    = isEdit ? `${TASK}/api/tasks/${editingId}` : `${TASK}/api/tasks`;
+  const method = isEdit ? 'PUT' : 'POST';
+  const body   = isEdit ? { title, description, priority, status } : { title, description, priority };
+
+  setBtn('modal-submit-btn', true, '');
+  try {
+    const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+    if (res.ok) {
+      closeModal();
+      await loadTasks();
+      showToast(isEdit ? '✅ แก้ไข Task สำเร็จ' : '✅ สร้าง Task สำเร็จ');
+    } else {
+      const d = await res.json();
+      document.getElementById('m-err').textContent = d.error || 'เกิดข้อผิดพลาด';
     }
+  } catch { document.getElementById('m-err').textContent = 'ไม่สามารถเชื่อมต่อได้'; }
+  finally  { setBtn('modal-submit-btn', false, isEdit ? 'บันทึก' : 'สร้าง Task'); }
+}
 
-    async function deleteTask(id) {
-        if (!confirm(`ลบงานนี้?`)) return;
-        const res = await fetch(`${API_TASKS}/${id}`, { method: 'DELETE' });
-        if (res.ok) loadTasks();
-    }
+function openDeleteModal(id) {
+  deleteTargetId = id;
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
 
-    async function approveTask(id) {
-        const res = await fetch(`${API_TASKS}/${id}/approve`, { method: 'PATCH' });
-        if (res.ok) loadTasks();
+async function confirmDelete() {
+  if (!deleteTargetId) return;
+  try {
+    const res = await fetch(`${TASK}/api/tasks/${deleteTargetId}`, {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+    if (res.ok) {
+      document.getElementById('delete-modal').classList.add('hidden');
+      await loadTasks();
+      showToast('🗑️ ลบ Task สำเร็จ', 'err');
     }
+  } catch { showToast('ลบไม่สำเร็จ', 'err'); }
+  deleteTargetId = null;
+}
 
-    async function loadUsers() {
-        const res = await fetch(`${API_AUTH}/users`);
-        const users = await res.json();
-        const list = document.getElementById('userList');
-        list.innerHTML = users.map(u => `
-            <tr>
-                <td>${u.username}</td>
-                <td style="color: var(--text-sub)">${u.email}</td>
-                <td>${u.role === 'admin' ? '<span class="badge-admin">ADMIN</span>' : 'User'}</td>
-                <td>
-                    ${u.role !== 'admin' ? `<button class="delete-btn" onclick="deleteUser(${u.id})">ลบ</button>` : '-'}
-                </td>
-            </tr>
-        `).join('');
-    }
+// Close modal on overlay click
+document.getElementById('task-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.getElementById('delete-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget)
+    e.currentTarget.classList.add('hidden');
+});
 
-    async function deleteUser(id) {
-        if (confirm('ยืนยันลบผู้ใช้?')) {
-            const res = await fetch(`${API_AUTH}/users/${id}`, { method: 'DELETE' });
-            if (res.ok) loadUsers();
-        }
-    }
-
-    async function addTask() {
-        const title = document.getElementById('taskTitle').value;
-        if (!title) return;
-        const token = localStorage.getItem('token');
-        await fetch(API_TASKS, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ title })
-        });
-        document.getElementById('taskTitle').value = '';
-        loadTasks();
-    }
-
-    function logout() {
-        localStorage.clear();
-        location.reload();
-    }
+// ══════════════════════════════════════════════════
+//  Auto-login ถ้ามี token
+// ══════════════════════════════════════════════════
+if (token) {
+  (async () => {
+    try {
+      const res  = await fetch(`${AUTH}/api/auth/verify`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.valid) { currentUser = data.user; initApp(currentUser); }
+      else { localStorage.removeItem('jwt_token'); token = null; }
+    } catch { /* network error — stay on login */ }
+  })();
+}
 </script>
 </body>
 </html>

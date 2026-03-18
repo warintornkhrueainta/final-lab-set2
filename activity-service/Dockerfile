@@ -1,8 +1,11 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
-# แก้ตรงนี้ครับ: จุด (เว้นวรรค) จุด
-COPY . .
-EXPOSE 3000
+RUN npm install --omit=dev
+COPY src/ ./src/
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+EXPOSE 3003
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- http://localhost:3003/api/activity/health || exit 1
 CMD ["node", "src/index.js"]
