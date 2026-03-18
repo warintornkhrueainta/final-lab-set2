@@ -665,8 +665,9 @@
 // ══════════════════════════════════════════════════
 //  Config
 // ══════════════════════════════════════════════════
-const AUTH = window.APP_CONFIG.AUTH_URL;
-const TASK = window.APP_CONFIG.TASK_URL;
+const AUTH     = window.APP_CONFIG.AUTH_URL;
+const TASK     = window.APP_CONFIG.TASK_URL;
+const ACTIVITY = window.APP_CONFIG.ACTIVITY_URL;  // ใช้ใน activity.html เท่านั้น
 
 let token       = localStorage.getItem('jwt_token');
 let currentUser = null;

@@ -3,7 +3,7 @@
 //  แก้ URL ให้ตรงกับ Railway deployment ของคุณ
 // ══════════════════════════════════════════════════════
 window.APP_CONFIG = {
-  AUTH_URL:     'https://your-auth-service.up.railway.app',
-  TASK_URL:     'https://your-task-service.up.railway.app',
-  ACTIVITY_URL: 'https://your-activity-service.up.railway.app'
+  AUTH_URL:     'https://auth-service-production-9612.up.railway.app',
+  TASK_URL:     'https://task-service-production-9234.up.railway.app',
+  ACTIVITY_URL: 'https://activity-service-production-895b.up.railway.app'
 };
